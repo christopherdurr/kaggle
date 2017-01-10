@@ -39,6 +39,7 @@ predictors = ["Pclass", "Sex", "Age", "SibSp", "Parch", "Fare", "Embarked"]
 # n_estimators is the number of trees we want to make
 # min_samples_split is the minimum number of rows we need to make a split
 # min_samples_leaf is the minimum number of samples we can have at the place where a tree branch ends (the bottom points of the tree)
+# min_samples_split increases the accuracy of the model
 alg = RandomForestClassifier(random_state=1, n_estimators=10, min_samples_split=2, min_samples_leaf=1)
 # Compute the accuracy score for all the cross validation folds.  (much simpler than what we did before!)
 kf = cross_validation.KFold(titanic.shape[0], n_folds=3, random_state=1)
