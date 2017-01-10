@@ -47,3 +47,10 @@ scores = cross_validation.cross_val_score(alg, titanic[predictors], titanic["Sur
 
 # Take the mean of the scores (because we have one for each fold)
 print(scores.mean())
+
+### Family Size and Length of Name are both data that can be used in the model. 
+# Generating a familysize column
+titanic["FamilySize"] = titanic["SibSp"] + titanic["Parch"]
+
+# The .apply method generates a new series
+titanic["NameLength"] = titanic["Name"].apply(lambda x: len(x))
