@@ -83,3 +83,70 @@ titanic["Title"] = titles
 
 # The .apply method generates a new series
 titanic["NameLength"] = titanic["Name"].apply(lambda x: len(x))
+
+##################################################
+# Figure out the family of each passenger by giving each family a unique ID. 
+#################################################
+import operator
+
+# A dictionary mapping family name to id
+family_id_mapping = {}
+
+# A function to get the id given a row
+def get_family_id(row):
+    # Find the last name by splitting on a comma
+    last_name = row["Name"].split(",")[0]
+    # Create the family id
+    family_id = "{0}{1}".format(last_name, row["FamilySize"])
+    # Look up the id in the mapping
+    if family_id not in family_id_mapping:
+        if len(family_id_mapping) == 0:
+            current_id = 1
+        else:
+            # Get the maximum id from the mapping and add one to it if we don't have an id
+            current_id = (max(family_id_mapping.items(), key=operator.itemgetter(1))[1] + 1)
+        family_id_mapping[family_id] = current_id
+    return family_id_mapping[family_id]
+
+# Get the family ids with the apply method
+family_ids = titanic.apply(get_family_id, axis=1)
+
+# There are a lot of family ids, so we'll compress all of the families under 3 members into one code.
+family_ids[titanic["FamilySize"] < 3] = -1
+
+# Print the count of each unique id.
+print(pandas.value_counts(family_ids))
+
+titanic["FamilyId"] = family_ids
+
+
+###################################
+# Feature Engineering
+###################################
+
+import numpy as np
+from sklearn.feature_selection import SelectKBest, f_classif
+
+predictors = ["Pclass", "Sex", "Age", "SibSp", "Parch", "Fare", "Embarked", "FamilySize", "Title", "FamilyId", "NameLength"]
+
+# Perform feature selection
+selector = SelectKBest(f_classif, k=5)
+selector.fit(titanic[predictors], titanic["Survived"])
+
+# Get the raw p-values for each feature, and transform from p-values into scores
+scores = -np.log10(selector.pvalues_)
+
+# Plot the scores.  See how "Pclass", "Sex", "Title", and "Fare" are the best?
+plt.bar(range(len(predictors)), scores)
+plt.xticks(range(len(predictors)), predictors, rotation='vertical')
+plt.show()
+
+# Pick only the four best features.
+predictors = ["Pclass", "Sex", "Fare", "Title"]
+
+alg = RandomForestClassifier(random_state=1, n_estimators=50, min_samples_split=8, min_samples_leaf=4)
+
+kf = cross_validation.KFold(titanic.shape[0], n_folds=3, random_state=1)
+scores = cross_validation.cross_val_score(alg, titanic[predictors], titanic["Survived"], cv=kf)
+
+print(scores.mean())
