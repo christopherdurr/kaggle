@@ -14,3 +14,6 @@ world_alcohol_dtype = world_alcohol.dtype
 # READ THE DATA PROPERLY
 world_alcohol = numpy.genfromtxt("world_alcohol.csv", delimiter=",", dtype = "U75", skip_header = 1)
 print(world_alcohol)
+
+countries = world_alcohol[:,2]
+alcohol_consumption = world_alcohol[:,4]
